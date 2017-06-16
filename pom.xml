@@ -6,13 +6,19 @@
 
     <groupId>cf.magsoo</groupId>
     <artifactId>magictitles</artifactId>
-    <version>2.0</version>
+    <version>2.1</version>
 
     <repositories>
         <!-- Spigot Repo -->
         <repository>
             <id>spigot-repo</id>
             <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+
+        <!-- bStats Repo -->
+        <repository>
+            <id>bstats-repo</id>
+            <url>http://repo.bstats.org/content/repositories/releases/</url>
         </repository>
     </repositories>
 
@@ -21,15 +27,21 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>1.11.2-R0.1-SNAPSHOT</version>
+            <version>1.12-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
-            <version>1.11.2-R0.1-SNAPSHOT</version>
             <scope>system</scope>
-            <systemPath>${project.basedir}/libs/craftbukkit-1.11.2-R0.1-SNAPSHOT.jar</systemPath>
+            <systemPath>${project.basedir}/libs/craftbukkit-1.12.jar</systemPath>
+        </dependency>
+
+        <!--bStats API-->
+        <dependency>
+            <groupId>org.bstats</groupId>
+            <artifactId>bstats-bukkit</artifactId>
+            <version>1.1</version>
         </dependency>
     </dependencies>
 
@@ -70,10 +82,18 @@
                         <configuration>
                             <!--<minimizeJar>true</minimizeJar>-->
                             <createDependencyReducedPom>false</createDependencyReducedPom>
-                            <!--<artifactSet>
+                            <artifactSet>
                                 <includes>
+                                    <include>org.bstats:*</include>
                                 </includes>
-                            </artifactSet>-->
+                            </artifactSet>
+                            <relocations>
+                                <relocation>
+                                    <pattern>org.bstats</pattern>
+                                    <!-- Replace this with your package! -->
+                                    <shadedPattern>cf.magsoo</shadedPattern>
+                                </relocation>
+                            </relocations>
                         </configuration>
                     </execution>
                 </executions>

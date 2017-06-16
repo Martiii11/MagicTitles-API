@@ -2,6 +2,7 @@ target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.l
 *.xml
 MagicTitles API.iml
 libs/craftbukkit-1.11.2-R0.1-SNAPSHOT.jar
+libs/craftbukkit-1.12.jar
 *.class
 target/classes/plugin.yml
 target/original-magictitles-2.0.jar

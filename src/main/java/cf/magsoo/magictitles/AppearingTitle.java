@@ -14,6 +14,7 @@ public class AppearingTitle implements Title {
     private int stay;
     private int fadeOut;
     private int timeToComplete;
+    private boolean waitForSubtitle = false;
 
     public AppearingTitle(TitleSlot slot, String text, int timeToComplete){
         this(slot, text, 40, timeToComplete);
@@ -31,23 +32,29 @@ public class AppearingTitle implements Title {
     }
 
     public AppearingTitle(TitleSlot slot, String title, String subtitle, int stay, int fadeOut, int timeToComplete){
+        this(slot, title, subtitle, stay, fadeOut, timeToComplete, false);
+    }
+
+    public AppearingTitle(TitleSlot slot, String title, String subtitle, int stay, int fadeOut, int timeToComplete, boolean waitForSubtitle){
         this.slot = slot;
         text1 = title;
         text2 = subtitle;
         this.stay = stay;
         this.fadeOut = fadeOut;
         this.timeToComplete = timeToComplete;
+        this.waitForSubtitle = waitForSubtitle;
     }
 
     @Override
     public void send(Player player) {
+        Titles.plugin.titleDisplayed(2, slot);
         switch (slot) {
             case TITLE_SUBTITLE:
                 sendTimesPacket(player, 0, stay + timeToComplete, fadeOut);
+                int timePerCharTitle = timeToComplete / ChatColor.stripColor(text1).length();
                 if (text1 == null || text1.equals("")) {
                     sendTitlePacket(player, toJSON(""));
                 } else {
-                    int timePerCharTitle = timeToComplete / ChatColor.stripColor(text1).length();
                     setTitleTasks(player, new BukkitRunnable() {
                         int charCountTitle = 1;
 
@@ -81,11 +88,11 @@ public class AppearingTitle implements Title {
                                     cancel();
                                 }
                             }
-                        }.runTaskTimer(plugin, 0, timePerCharSubtitle));
+                        }.runTaskTimer(plugin, waitForSubtitle ? timePerCharTitle * ChatColor.stripColor(text1).length() : 0, timePerCharSubtitle));
                     }
                 }
                 break;
-            case ABOVE_HOTBAR:
+            case ACTIONBAR:
                 int timePerCharMessage = timeToComplete / ChatColor.stripColor(text1).length();
                 setHotbarTasks(player, new BukkitRunnable() {
                     int charCountMessage = 1;
@@ -95,7 +102,7 @@ public class AppearingTitle implements Title {
                         while (text1.charAt(charCountMessage - 1) == '§') {
                             charCountMessage += 2;
                         }
-                        sendHotbarPacket(player, toJSON(text1.substring(0, charCountMessage)));
+                        sendActionbarPacket(player, toJSON(text1.substring(0, charCountMessage)));
                         charCountMessage++;
                         if (charCountMessage > text1.length()) {
                             stay();
@@ -110,7 +117,7 @@ public class AppearingTitle implements Title {
 
                             @Override
                             public void run() {
-                                sendHotbarPacket(player, toJSON(text1));
+                                sendActionbarPacket(player, toJSON(text1));
                                 count++;
                                 if (count >= s) {
                                     cancel();

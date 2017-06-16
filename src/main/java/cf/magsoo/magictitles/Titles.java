@@ -10,10 +10,11 @@ import java.util.HashMap;
 
 public class Titles {
 	static boolean oldReflection = false;
+	static boolean newReflection = false;
 	static MagicTitles plugin;
     private static HashMap<Player, BukkitTask> titleSubtitleTasks = new HashMap<>();
     private static HashMap<Player, BukkitTask> hotbarTasks = new HashMap<>();
-	
+
 	static void sendTimesPacket(Player player, int fadeIn, int stay, int fadeOut) {
 		try {
 			Constructor<?> constructor;
@@ -33,6 +34,7 @@ public class Titles {
 			sendPacket(player, packet);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Error while sending times packet. Please report this to the dev. Error code: 002");
 		}
 	}
 
@@ -61,6 +63,7 @@ public class Titles {
 			sendPacket(player, packet);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Error while sending title packet. Please report this to the dev. Error code: 003");
 		}
 
 	}
@@ -90,24 +93,36 @@ public class Titles {
 			sendPacket(player, packet);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Error while sending subtitle packet. Please report this to the dev. Error code: 004");
 		}
 	}
 
-	static void sendHotbarPacket(Player player, String message) {
+	static void sendActionbarPacket(Player player, String message) {
 		try {
-			Constructor<?> constructor = getNMSClass("PacketPlayOutChat")
-					.getConstructor(getNMSClass("IChatBaseComponent"), byte.class);
-			Object m;
+		    Object packet;
 			if (oldReflection) {
-				m = getNMSClass("ChatSerializer").getDeclaredMethod("a", String.class).invoke(null, message);
+                Constructor<?> constructor = getNMSClass("PacketPlayOutChat")
+                        .getConstructor(getNMSClass("IChatBaseComponent"), byte.class);
+				Object m = getNMSClass("ChatSerializer").getDeclaredMethod("a", String.class).invoke(null, message);
+                packet = constructor.newInstance(m, (byte) 2);
+			} else if (newReflection) {
+			    Constructor<?> constructor = getNMSClass("PacketPlayOutChat")
+                        .getConstructor(getNMSClass("IChatBaseComponent"), getNMSClass("ChatMessageType"));
+                Object enumType = getNMSClass("ChatMessageType").getField("GAME_INFO").get(null);
+                Object m = getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getDeclaredMethod("a", String.class)
+                        .invoke(null, message);
+                packet = constructor.newInstance(m, enumType);
 			} else {
-				m = getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getDeclaredMethod("a", String.class)
+                Constructor<?> constructor = getNMSClass("PacketPlayOutChat")
+                        .getConstructor(getNMSClass("IChatBaseComponent"), byte.class);
+				Object m = getNMSClass("IChatBaseComponent").getDeclaredClasses()[0].getDeclaredMethod("a", String.class)
 						.invoke(null, message);
+                packet = constructor.newInstance(m, (byte) 2);
 			}
-			Object packet = constructor.newInstance(m, (byte) 2);
 			sendPacket(player, packet);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Error while sending actionbar packet. Please report this to the dev. Error code: 005");
 		}
 	}
 
@@ -130,6 +145,7 @@ public class Titles {
 			sendPacket(player, packet);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Error while sending clear packet. Please report this to the dev. Error code: 006");
 		}
 	}
 
@@ -140,6 +156,7 @@ public class Titles {
 			playerCon.getClass().getMethod("sendPacket", getNMSClass("Packet")).invoke(playerCon, packet);
 		} catch (Exception e) {
 			e.printStackTrace();
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Error while sending a packet. Please report this to the dev. Error code: 007");
 		}
 	}
 
@@ -150,6 +167,7 @@ public class Titles {
 			return c;
 		} catch (ClassNotFoundException e) {
 			e.printStackTrace();
+			Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Error while getting " + name + " class. Please report this to the dev. Error code: 008");
 			return null;
 		}
 	}
@@ -188,8 +206,8 @@ public class Titles {
                     titleSubtitleTasks.remove(player);
                 }
                 break;
-            case ABOVE_HOTBAR:
-                sendHotbarPacket(player, toJSON(""));
+            case ACTIONBAR:
+                sendActionbarPacket(player, toJSON(""));
                 if (hotbarTasks.containsKey(player)){
                     hotbarTasks.get(player).cancel();
                     hotbarTasks.remove(player);

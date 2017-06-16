@@ -38,21 +38,22 @@ public class NormalTitle implements Title {
 
     @Override
     public void send(Player player) {
+        Titles.plugin.titleDisplayed(0, slot);
         switch (slot) {
             case TITLE_SUBTITLE:
                 sendTimesPacket(player, fadeIn, stay, fadeOut);
                 sendTitlePacket(player, toJSON(text1));
                 sendSubtitlePacket(player, toJSON(text2));
                 break;
-            case ABOVE_HOTBAR:
-                sendHotbarPacket(player, toJSON(text1));
+            case ACTIONBAR:
+                sendActionbarPacket(player, toJSON(text1));
                 setHotbarTasks(player, new BukkitRunnable() {
                     int count = 0;
                     int s = stay - 40;
 
                     @Override
                     public void run() {
-                        sendHotbarPacket(player, toJSON(text1));
+                        sendActionbarPacket(player, toJSON(text1));
                         count++;
                         if (count >= s) {
                             cancel();

@@ -4,7 +4,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import static cf.magsoo.magictitles.Titles.*;
-import static cf.magsoo.magictitles.Titles.sendHotbarPacket;
+import static cf.magsoo.magictitles.Titles.sendActionbarPacket;
 
 public class BlinkTitle implements Title {
     private TitleSlot slot = TitleSlot.TITLE_SUBTITLE;
@@ -44,6 +44,7 @@ public class BlinkTitle implements Title {
 
     @Override
     public void send(Player player) {
+        Titles.plugin.titleDisplayed(3, slot);
         switch (slot) {
             case TITLE_SUBTITLE:
                 sendTimesPacket(player, fadeIn, stay, fadeOut);
@@ -81,8 +82,8 @@ public class BlinkTitle implements Title {
                     }
                 }.runTaskTimer(plugin, fadeIn, blinkInterval));
                 break;
-            case ABOVE_HOTBAR:
-                sendHotbarPacket(player, toJSON(text1));
+            case ACTIONBAR:
+                sendActionbarPacket(player, toJSON(text1));
                 setHotbarTasks(player, new BukkitRunnable() {
                     boolean b = false;
                     int count = 0;
@@ -92,9 +93,9 @@ public class BlinkTitle implements Title {
                         count = count + blinkInterval;
                         b = !b;
                         if (b) {
-                            sendHotbarPacket(player, toJSON(text1));
+                            sendActionbarPacket(player, toJSON(text1));
                         } else {
-                            sendHotbarPacket(player, toJSON(""));
+                            sendActionbarPacket(player, toJSON(""));
                         }
                         if (count > stay && !b) {
                             cancel();

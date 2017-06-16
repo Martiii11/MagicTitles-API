@@ -14,6 +14,7 @@ public class MagicTitle implements Title {
     private int stay;
     private int fadeOut;
     private int timeToComplete;
+    private boolean waitForSubtitle = false;
 
     public MagicTitle(TitleSlot slot, String text, int timeToComplete){
         this(slot, text, 40, timeToComplete);
@@ -31,6 +32,10 @@ public class MagicTitle implements Title {
     }
 
     public MagicTitle(TitleSlot slot, String title, String subtitle, int fadeIn, int stay, int fadeOut, int timeToComplete){
+        this(slot, title, subtitle, fadeIn, stay, fadeOut, timeToComplete, false);
+    }
+
+    public MagicTitle(TitleSlot slot, String title, String subtitle, int fadeIn, int stay, int fadeOut, int timeToComplete, boolean waitForSubtitle){
         this.slot = slot;
         text1 = title;
         text2 = subtitle;
@@ -38,13 +43,16 @@ public class MagicTitle implements Title {
         this.stay = stay;
         this.fadeOut = fadeOut;
         this.timeToComplete = timeToComplete;
+        this.waitForSubtitle = waitForSubtitle;
     }
 
     @Override
     public void send(Player player) {
+        Titles.plugin.titleDisplayed(1, slot);
         switch (slot) {
             case TITLE_SUBTITLE:
                 sendTimesPacket(player, fadeIn, stay + timeToComplete, fadeOut);
+                long timePerCharTitle = timeToComplete / ChatColor.stripColor(text1).length();
                 if (text1 == null || text1.equals("")) {
                     sendTitlePacket(player, toJSON(""));
                 } else {
@@ -53,7 +61,6 @@ public class MagicTitle implements Title {
                         @Override
                         public void run() {
                             sendTimesPacket(player, 0, stay + timeToComplete, fadeOut);
-                            long timePerCharTitle = timeToComplete / ChatColor.stripColor(text1).length();
                             new BukkitRunnable() {
                                 int charCountTitle = 0;
 
@@ -135,12 +142,12 @@ public class MagicTitle implements Title {
                                     }
                                 }.runTaskTimer(plugin, 0, timePerCharSubtitle));
                             }
-                        }.runTaskLater(plugin, fadeIn));
+                        }.runTaskLater(plugin, waitForSubtitle ? (timePerCharTitle * ChatColor.stripColor(text1).length()) + fadeIn : fadeIn));
                     }
                 }
                 break;
-            case ABOVE_HOTBAR:
-                sendHotbarPacket(player, toMagicJSON(text1));
+            case ACTIONBAR:
+                sendActionbarPacket(player, toMagicJSON(text1));
                 long timePerCharHotbar = timeToComplete / ChatColor.stripColor(text1).length();
                 setHotbarTasks(player, new BukkitRunnable() {
                     int charCountMessage = 0;
@@ -163,7 +170,7 @@ public class MagicTitle implements Title {
                                 magicTitle.append(text1.charAt(i));
                             }
                         }
-                        sendHotbarPacket(player, toJSON(magicTitle.toString()));
+                        sendActionbarPacket(player, toJSON(magicTitle.toString()));
                         charCountMessage++;
                         if (charCountMessage >= text1.length()) {
                             stay();
@@ -178,7 +185,7 @@ public class MagicTitle implements Title {
 
                             @Override
                             public void run() {
-                                sendHotbarPacket(player, toJSON(text1));
+                                sendActionbarPacket(player, toJSON(text1));
                                 count++;
                                 if (count >= s) {
                                     cancel();
