@@ -34,6 +34,7 @@
             <groupId>org.bukkit</groupId>
             <artifactId>craftbukkit</artifactId>
             <scope>system</scope>
+            <version>1.12-R0.1-SNAPSHOT</version>
             <systemPath>${project.basedir}/libs/craftbukkit-1.12.jar</systemPath>
         </dependency>
 

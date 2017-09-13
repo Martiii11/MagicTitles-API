@@ -38,7 +38,6 @@ public class NormalTitle implements Title {
 
     @Override
     public void send(Player player) {
-        Titles.plugin.titleDisplayed(0, slot);
         switch (slot) {
             case TITLE_SUBTITLE:
                 sendTimesPacket(player, fadeIn, stay, fadeOut);

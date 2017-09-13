@@ -47,7 +47,6 @@ public class AppearingTitle implements Title {
 
     @Override
     public void send(Player player) {
-        Titles.plugin.titleDisplayed(2, slot);
         switch (slot) {
             case TITLE_SUBTITLE:
                 sendTimesPacket(player, 0, stay + timeToComplete, fadeOut);

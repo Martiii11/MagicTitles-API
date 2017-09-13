@@ -3,18 +3,16 @@ package cf.magsoo.magictitles;
 import org.bstats.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
+import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.HashMap;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
 
 public class MagicTitles extends JavaPlugin {
-    private int[] titleSubtitleCount = new int[4];
-    private int[] actionbarCount = new int[4];
-    private YamlConfiguration data;
-    private File dataFile;
 
     @Override
     public void onEnable() {
@@ -24,60 +22,38 @@ public class MagicTitles extends JavaPlugin {
         Titles.newReflection = v.contains("v1_12");
         Titles.plugin = this;
 
-        File bStatsFolder = new File(getDataFolder().getParentFile(), "bStats");
-        dataFile = new File(bStatsFolder, "MT-data.yml");
-        data = YamlConfiguration.loadConfiguration(dataFile);
-        if (data.contains("TS")){
-            titleSubtitleCount[0] = data.getInt("TS.0");
-            titleSubtitleCount[1] = data.getInt("TS.1");
-            titleSubtitleCount[2] = data.getInt("TS.2");
-            titleSubtitleCount[3] = data.getInt("TS.3");
-            actionbarCount[0] = data.getInt("A.0");
-            actionbarCount[1] = data.getInt("A.1");
-            actionbarCount[2] = data.getInt("A.2");
-            actionbarCount[3] = data.getInt("A.3");
-        }
 
-        Metrics metrics = new Metrics(this);
-        metrics.addCustomChart(new Metrics.AdvancedBarChart("titles_displayed") {
+        new Metrics(this);
+
+
+        new BukkitRunnable() {
             @Override
-            public HashMap<String, int[]> getValues(HashMap<String, int[]> hashMap) {
-                hashMap.put("Title & Subtitle", titleSubtitleCount);
-                hashMap.put("ActionBar", actionbarCount);
-                return hashMap;
-            }
-        });
+            public void run() {
+                try {
+                    URL url = new URL("http://magsoo.pe.hu/plugins/MagicTitles/info/version.txt");
+                    HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+                    connection.setRequestMethod("GET");
+                    connection.setRequestProperty("User-Agent", "Version-Checker");
+                    int responseCode = connection.getResponseCode();
+                    if (responseCode == 200){
+                        BufferedReader in = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+                        String ver = in.readLine();
+                        float newVersion = Float.valueOf(ver);
+                        float currentVersion = Float.valueOf(getDescription().getVersion());
+                        if (newVersion > currentVersion){
+                            getServer().getConsoleSender().sendMessage(ChatColor.WHITE + "A new version of MagicTitles API is available.");
+                        }
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
 
-        //TODO: Check for plugin updates.
+            }
+        }.runTaskAsynchronously(this);
     }
 
     @Override
     public void onDisable() {
         super.onDisable();
-        data.set("TS.0", titleSubtitleCount[0]);
-        data.set("TS.1", titleSubtitleCount[1]);
-        data.set("TS.2", titleSubtitleCount[2]);
-        data.set("TS.3", titleSubtitleCount[3]);
-        data.set("A.0", actionbarCount[0]);
-        data.set("A.1", actionbarCount[1]);
-        data.set("A.2", actionbarCount[2]);
-        data.set("A.3", actionbarCount[3]);
-        try {
-            data.save(dataFile);
-        } catch (IOException e) {
-            e.printStackTrace();
-            Bukkit.getConsoleSender().sendMessage(ChatColor.RED + "Error while saving metrics data. Please report this to the dev. Error code: 001");
-        }
-    }
-
-    void titleDisplayed(int type, TitleSlot slot) {
-        switch (slot) {
-            case TITLE_SUBTITLE:
-                titleSubtitleCount[type]++;
-                break;
-            case ACTIONBAR:
-                actionbarCount[type]++;
-                break;
-        }
     }
 }

@@ -44,7 +44,6 @@ public class BlinkTitle implements Title {
 
     @Override
     public void send(Player player) {
-        Titles.plugin.titleDisplayed(3, slot);
         switch (slot) {
             case TITLE_SUBTITLE:
                 sendTimesPacket(player, fadeIn, stay, fadeOut);
